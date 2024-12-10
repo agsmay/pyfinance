@@ -6,4 +6,3 @@ class stockPortfolio:
         self.tickers = tickers
         self.stocks = {ticker: stockPrice(ticker) for ticker in tickers}
         self.strategy = strategy
-

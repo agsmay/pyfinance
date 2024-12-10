@@ -71,7 +71,7 @@ if __name__ == "__main__":
     tesla.set_period(period)
 
     tesla.get_stock_data()
-    tesla.plot_stock_price()
+    # tesla.plot_stock_price()
 
     # Initialize the moving average strategy
     mov_average_strategy = movingAverage(tesla.ticker, tesla.stock_data)
