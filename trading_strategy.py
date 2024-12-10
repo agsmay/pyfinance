@@ -45,7 +45,6 @@ class movingAverage:
         """
         Simulate a moving average crossover strategy.
         """
-
         # Add moving averages
         self.add_moving_average(window=short_window)
         self.add_moving_average(window=long_window)
