@@ -5,7 +5,6 @@ import numpy as np
 
 from trading_strategy import movingAverage
 
-
 class stockPrice:
     def __init__(self, ticker : str):
         self.ticker = ticker
@@ -83,5 +82,3 @@ if __name__ == "__main__":
     mov_average_strategy.plot_backtest()
 
     plt.show()
-
-
