@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
+# import plotting
 
 import trading_strategy as ts
 
@@ -203,7 +204,7 @@ class stockPrice:
             raise ValueError("Model not trained. Call 'train_regression_model' first.")
 
         # Plot the actual and predicted prices
-        plt.figure(figsize=(12, 6))
+        plt.figure()
         plt.plot(self.stock_data.index, self.stock_data['Close'], label='Actual Price')
         plt.plot(self.stock_data.index, self.stock_data['Predicted Close'], label='Predicted Price', linestyle='--')
         plt.title(f"{self.ticker} Stock Price Prediction")
@@ -231,7 +232,7 @@ class stockPrice:
         """
         Plot the predicted and forecasted stock prices, combining historical and future data.
         """
-        plt.figure(figsize=(14, 7))
+        plt.figure()
 
         # Plot historical and forecasted data
         historical_close = self.stock_data['Close'].dropna()
@@ -250,56 +251,3 @@ class stockPrice:
         plt.xlabel("Date")
         plt.ylabel("Price (USD)")
         plt.legend()
-
-
-
-if __name__ == "__main__":
-
-    ticker = "TSLA"     # Ticker symbol
-    period = "1y"       # Time period for fetching historical stock price data
-
-    forecast_days = 10  # Number of days to forecast into the future
-
-    # Period must be one of ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max']
-
-    # Initialize the stock price object, fetch data for the specified period, and plot the stock price
-    tesla = stockPrice(ticker)
-    tesla.set_period(period)
-
-    tesla.get_stock_data()
-    # tesla.plot_stock_price()
-
-    tesla.run_regression_prediction(forecast_days=forecast_days)
-
-    # Initialize and simulate the moving average trading strategy
-    mov_average_strategy = ts.movingAverage(tesla.ticker, tesla.stock_data)
-    mov_average_strategy.simulate_strategy(short_window=20, long_window=50)
-
-    mov_average_strategy.backtest()
-    mov_average_strategy.plot_backtest()
-
-    # Initialize Hidden Markov Model strategy
-    hmm_strategy = ts.hiddenMarkov(ticker="TSLA", stock_data=tesla.stock_data)
-
-    # Preprocess data and add daily returns
-    hmm_strategy.stock_data['Daily Return'] = hmm_strategy.stock_data['Close'].pct_change()
-
-    # Train HMM
-    hmm_strategy.train_hmm(n_states=3, features=['Daily Return'])
-
-    # Map states to actions
-    state_to_action = {
-        0: 'hold',  # Neutral
-        1: 'buy',   # Bullish
-        2: 'sell'   # Bearish
-    }
-
-    # Simulate HMM-based strategy
-    hmm_strategy.simulate_hmm_strategy(state_to_action=state_to_action)
-
-    # Plot hidden states and backtesting results
-    hmm_strategy.plot_hmm_states()
-    hmm_strategy.plot_backtest()
-
-
-    plt.show()
