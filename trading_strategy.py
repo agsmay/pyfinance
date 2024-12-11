@@ -2,6 +2,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from hmmlearn.hmm import GaussianHMM
+import requests
+import pandas_ta as ta
+from termcolor import colored as cl
+import math
+from alpaca_trade_api import REST, Stream
+from transformers import pipeline
+
+# import plotting
 
 class movingAverage:
     """
@@ -136,7 +144,7 @@ class movingAverage:
         Plot the portfolio value over time.
         """
 
-        plt.figure(figsize=(14, 7))
+        plt.figure()
         plt.plot(self.stock_data.index.to_numpy(), self.stock_data['Portfolio Value'].to_numpy(), label='Portfolio Value')
         plt.title(f"{self.ticker} Trading Strategy Backtest")
         plt.xlabel("Date")
@@ -151,7 +159,7 @@ class movingAverage:
         buy_signals = self.stock_data.loc[self.stock_data['Signal'] == 1]
         sell_signals = self.stock_data.loc[self.stock_data['Signal'] == -1]
 
-        plt.figure(figsize=(14, 7))
+        plt.figure()
         plt.plot(self.stock_data.index, self.stock_data['Close'], label='Close Price', alpha=0.7)
 
         # Buy signals
@@ -217,7 +225,7 @@ class movingAverage:
         self.backtest(initial_balance=10000.0, use_predictions=True)
         self.stock_data['Portfolio Value Predicted'] = self.stock_data['Portfolio Value']
 
-        plt.figure(figsize=(14, 7))
+        plt.figure()
         plt.plot(self.stock_data.index, self.stock_data['Portfolio Value True'], label='True Portfolio Value', alpha=0.7)
         plt.plot(self.stock_data.index, self.stock_data['Portfolio Value Predicted'], label='Predicted Portfolio Value', alpha=0.7, linestyle='--')
         plt.title(f"{self.ticker} Portfolio Value: True vs Predicted")
@@ -277,7 +285,7 @@ class hiddenMarkov:
         """
         Plot stock prices with the hidden states overlayed.
         """
-        plt.figure(figsize=(14, 7))
+        plt.figure()
         for state in self.stock_data['HMM State'].dropna().unique():
             state_data = self.stock_data[self.stock_data['HMM State'] == state]
             plt.scatter(state_data.index, state_data['Close'], label=f'State {int(state)}', alpha=0.6)
@@ -333,9 +341,108 @@ class hiddenMarkov:
         Plot the portfolio value over time.
         """
 
-        plt.figure(figsize=(14, 7))
+        plt.figure()
         plt.plot(self.stock_data.index.to_numpy(), self.stock_data['Portfolio Value'].to_numpy(), label='Portfolio Value')
         plt.title(f"{self.ticker} Trading Strategy Backtest")
         plt.xlabel("Date")
         plt.ylabel("Portfolio Value (USD)")
+        plt.legend()
+
+class donchianChannel:
+    """ Donchian Channel trading strategy.
+    """
+
+    def __init__(self, ticker : str, stock_data : pd.DataFrame):
+        """
+        Initialize the Donchian Channel strategy with a given ticker symbol and stock data.
+        """
+
+        self.ticker = ticker
+        self.stock_data = stock_data
+
+    def calculate_donchian_channel(self, lower_length = 40, upper_length = 50):
+        """
+        Calculate the Donchian Channel values for the stock data.
+        """
+
+        self.stock_data[['dcl', 'dcm', 'dcu']] = self.stock_data.ta.donchian(lower_length, upper_length)
+
+    def plot_donchian_channel(self):
+        """ 
+        Plot the stock price with the Donchian Channel.
+        """
+
+        plt.figure()
+        plt.plot(self.stock_data.index, self.stock_data['Close'], label='Close Price', color='red')
+        plt.plot(self.stock_data.index, self.stock_data['dcl'], label='dcl', color='black', linestyle='--', alpha=0.3)
+        plt.plot(self.stock_data.index, self.stock_data['dcm'], label='dcm', color='blue')
+        plt.plot(self.stock_data.index, self.stock_data['dcu'], label='dcu', color='black', linestyle='--', alpha=0.3)
+        plt.title(f"{self.ticker} Donchian Channel")
+        plt.xlabel("Date")
+        plt.ylabel("Price (USD)")
+        plt.legend()
+
+    def simulate_strategy(self, initial_balance=10000):
+        """
+        Simulate the Donchian Channel trading strategy given some initial balance.
+        """
+
+        self.calculate_donchian_channel()
+
+        in_position = False
+        equity = initial_balance
+        buy_signals = []
+        sell_signals = []
+
+        for j in range(3, len(self.stock_data)):
+
+            i = self.stock_data.index[j]
+
+            stock_high = self.stock_data.loc[i, 'High']
+            stock_close = self.stock_data.loc[i, 'Close']
+            stock_low = self.stock_data.loc[i, 'Low']
+            stock_dcu = self.stock_data.loc[i, 'dcu']
+            stock_dcl = self.stock_data.loc[i, 'dcl']
+
+            if stock_high > stock_dcu and not in_position:
+                no_of_shares = math.floor(equity/stock_close)
+                equity -= (no_of_shares * stock_close)
+                in_position = True
+                buy_signals.append(i)
+            
+            elif stock_low < stock_dcl and in_position:
+                equity += (no_of_shares * stock_close)
+                in_position = False
+                sell_signals.append(i)
+
+        if in_position:
+            equity += (no_of_shares * stock_close)
+
+        earning = round(equity - initial_balance, 2)
+        roi = round((earning/initial_balance) * 100, 2)
+        print(cl(f'EARNING: ${earning} ; ROI: {roi}%', attrs = ['bold']))
+
+        self.stock_data['Buy Signal'] = np.nan
+        self.stock_data['Sell Signal'] = np.nan
+        self.stock_data.loc[buy_signals, 'Buy Signal'] = self.stock_data['Close']
+        self.stock_data.loc[sell_signals, 'Sell Signal'] = self.stock_data['Close']
+
+    def plot_donchian_channel(self):
+        """ 
+        Plot the stock price with the Donchian Channel and buy/sell signals.
+        """
+
+        plt.figure()
+        plt.plot(self.stock_data.index, self.stock_data['Close'], label='Close Price', color='red')
+        plt.plot(self.stock_data.index, self.stock_data['dcl'], label='dcl', color='black', linestyle='--', alpha=0.3)
+        plt.plot(self.stock_data.index, self.stock_data['dcm'], label='dcm', color='blue')
+        plt.plot(self.stock_data.index, self.stock_data['dcu'], label='dcu', color='black', linestyle='--', alpha=0.3)
+        
+        # Plot buy/sell signals
+        plt.scatter(self.stock_data.index, self.stock_data['Buy Signal'], label='Buy Signal', marker='^', color='green')
+        plt.scatter(self.stock_data.index, self.stock_data['Sell Signal'], label='Sell Signal', marker='v', color='red')
+
+        plt.title(f"{self.ticker} Donchian Channel")
+        plt.xlabel("Date")
+        plt.ylabel("Price (USD)")
         plt.legend()
