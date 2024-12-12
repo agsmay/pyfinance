@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 
 
 # Settings to run the trading strategies
-ticker = "TSLA"     # Ticker symbol
+ticker = "UNH"     # Ticker symbol
 period = "1y"       # Time period for fetching historical stock price data
 forecast_days = 10  # Number of days to forecast into the future (used in regression prediction)
-trading_strategy = "Moving Average"  # Trading strategy to use
+trading_strategy = "Neural Network"  # Trading strategy to use
 plot = True
 
 # Initialize the stock price object, fetch data for the specified period, and plot the stock price

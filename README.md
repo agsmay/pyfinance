@@ -20,7 +20,9 @@ The script will import the historical stock price data for the specified period,
 - Neural Network strategy involves using a neural network algorithm to make trading decisions based on historical data. Neural networks are a class of machine learning models inspired by the human brain, capable of capturing complex patterns and relationships in the data. In this strategy, a neural network is trained on historical stock price data and other relevant features to predict future price movements. The network learns to identify patterns that are indicative of buy, sell, or hold signals. Once trained, the neural network can be used to generate trading signals in real-time, leveraging its ability to generalize from past data to make informed predictions about future price movements.
 
 ### Usage
-To use, open `trader.py`, and change the settings as desired.
+Before running any strategies or pulling any stock data, the required dependencies must first be installed. In the terminal, run `pip install -r requirements.txt` to install the Python libraries used in this project. 
+
+To use the trader, open `trader.py`, and change the settings as desired.
 - set the ticker to the company (e.g. "AAPL" for Apple)
 - set the period to a time period of interest
 - set the number of forecast days for the regression model to predict into the future

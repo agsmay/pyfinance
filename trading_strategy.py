@@ -44,7 +44,15 @@ class tradeManager:
         Run a trading strategy with the given parameters.
         
         Inputs:
-            strategy_name (str): The name of the trading strategy to run.
+            strategy_name (str): The name of the trading strategy to run. Must be one of:
+                - "Moving Average"
+                - "Hidden Markov Model"
+                - "Donchian Channel"
+                - "Decision Tree"
+                - "Kalman Trend"
+                - "Kalman Mean Reversion"
+                - "Random Forest"
+                - "Neural Network"
             plot (bool): Whether to plot the trading strategy results.
             **kwargs: Additional keyword arguments for the trading strategy.
         """
@@ -80,6 +88,7 @@ class tradeManager:
         # Portfolio value plot
         plt.figure()
         plt.plot(self.trade_data.index, self.trade_data['Portfolio Value'], label='Portfolio Value', color='blue')
+        plt.plot(self.trade_data.index, self.trade_data['Buy and Hold'], label='Buy and Hold', color='gray', linestyle='--')
         plt.title(f"{self.ticker} {self.strategy_name} Backtest")
         plt.xlabel("Date")
         plt.ylabel("Portfolio Value (USD)")
@@ -100,6 +109,13 @@ class tradeManager:
         plt.xlabel("Date")
         plt.ylabel("Cash (USD)")
         plt.legend()
+    
+    def buy_and_hold(self, initial_balance=10000):
+        """
+        Simulate a buy-and-hold strategy for comparison.
+        """
+
+        self.trade_data['Buy and Hold'] = self.trade_data['Close'] * (initial_balance / self.trade_data['Close'].iloc[0])
 
     def backtest_strategy(self, plot, initial_balance=10000):
         """
@@ -149,6 +165,8 @@ class tradeManager:
                 self.trade_data.loc[current_row, 'Cash'] +
                 self.trade_data.loc[current_row, 'Holdings'] * self.trade_data.loc[current_row, price_column]
             )
+        
+        self.buy_and_hold(initial_balance=initial_balance)
 
         # Plot results of backtest
         if plot:
@@ -592,7 +610,7 @@ class KalmanTrendStrategy:
         """
         Plot the observed price, estimated trend, and trading signals.
         """
-        plt.figure(figsize=(14, 7))
+        plt.figure()
         plt.plot(self.kalman_data['Date'], self.kalman_data['Observed'], label='Observed Price', color='blue')
         plt.plot(self.kalman_data['Date'], self.kalman_data['Trend'], label='Estimated Trend', color='orange')
         buy_signals = self.kalman_data[self.kalman_data['Signal'] == 1]
@@ -695,7 +713,7 @@ class KalmanMeanReversion:
         """
         Plot the observed price, estimated mean, and trading signals.
         """
-        plt.figure(figsize=(14, 7))
+        plt.figure()
         plt.plot(self.kalman_data['Date'], self.kalman_data['Observed'], label='Observed Price', color='blue')
         plt.plot(self.kalman_data['Date'], self.kalman_data['Estimated Mean'], label='Estimated Mean', color='orange')
         buy_signals = self.kalman_data[self.kalman_data['Signal'] == 1]
