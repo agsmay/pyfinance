@@ -37,6 +37,7 @@ class tradeManager:
             "Kalman Mean Reversion": KalmanMeanReversion,
             "Random Forest": randomForest,
             "Neural Network": NeuralNetworkStrategy,
+            "Random Trader": randomTrader
         }
 
     def run_strategy(self, strategy_name : str, plot : bool, **kwargs):
@@ -957,6 +958,43 @@ class NeuralNetworkStrategy:
         """
         self.train_model()
         self.predict_signals()
+
+    def set_output(self):
+        """
+        Set the output of the neural network strategy, with date as index, close price, signals.
+        """
+    
+        self.strategy_df = self.stock_data[['Close', 'Signal']]
+      
+        return self.strategy_df
+
+class randomTrader:
+
+    def __init__(self, ticker, stock_data):
+        self.ticker = ticker
+        self.stock_data = stock_data
+    
+    def run_strategy(self):
+        """
+        Run the random trading strategy.
+        """
+        self.stock_data['Signal'] = np.random.choice([-1, 0, 1], size=len(self.stock_data))
+    
+    def plot_strategy(self):
+        """
+        Plot the stock price with buy/sell signals.
+        """
+        buy_signals = self.stock_data[self.stock_data['Signal'] == 1]
+        sell_signals = self.stock_data[self.stock_data['Signal'] == -1]
+
+        plt.figure()
+        plt.plot(self.stock_data.index, self.stock_data['Close'], label='Close Price', color='black')
+        plt.scatter(buy_signals.index, buy_signals['Close'], label='Buy Signal', marker='^', color='green')
+        plt.scatter(sell_signals.index, sell_signals['Close'], label='Sell Signal', marker='v', color='red')
+        plt.title(f"{self.ticker} Random Trading Strategy")
+        plt.xlabel("Date")
+        plt.ylabel("Price (USD)")
+        plt.legend
 
     def set_output(self):
         """
