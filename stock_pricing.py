@@ -9,8 +9,6 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 # import plotting
 
-import trading_strategy as ts
-
 class stockPrice:
     """ 
     Stock price object to fetch and analyze historical stock price data.
@@ -173,9 +171,6 @@ class stockPrice:
         }, index=future_dates)
 
         print("Future prices forecasted.")
-
-
-
 
     def predict_next_price(self):
         """

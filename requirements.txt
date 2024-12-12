@@ -1,0 +1,9 @@
+matplotlib
+yfinance
+pandas
+numpy==1.26.0
+scikit-learn
+alpaca_trade_api
+hmmlearn
+pandas_ta
+tensorflow
