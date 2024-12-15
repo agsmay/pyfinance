@@ -76,6 +76,16 @@ class stockPrice:
         if save_to_csv:
             self.stock_data.to_csv(f"{self.ticker}_stock_data.csv")
 
+    def get_current_price(self):
+        """
+        Fetch the current stock price for the given ticker symbol.
+        """
+
+        if not hasattr(self, 'stock_data'):
+            raise ValueError("Stock data not fetched. Call 'get_stock_data' first.")
+        
+        return self.stock_data['Close'].iloc[-1]
+
     def plot_stock_price(self):
         """
         Plot historical stock price data.
