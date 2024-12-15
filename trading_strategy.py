@@ -255,6 +255,8 @@ class movingAverage:
         self.stock_data.loc[
             (self.stock_data[lower_ma] < self.stock_data[upper_ma]) &
             (self.stock_data['RSI'] > 70), 'Signal'] = -1
+        
+        self.set_output()
 
     def set_output(self):
         """
@@ -323,6 +325,8 @@ class hiddenMarkov:
         """
         self.train_hmm()
         self.simulate_hmm_strategy()
+
+        self.set_output()
     
     def set_output(self):
         """
@@ -412,6 +416,8 @@ class donchianChannel:
         self.stock_data['Sell Signal'] = np.nan
         self.stock_data.loc[buy_signals, 'Buy Signal'] = self.stock_data['Close']
         self.stock_data.loc[sell_signals, 'Sell Signal'] = self.stock_data['Close']
+
+        self.set_output()
 
     def plot_strategy(self):
         """ 
@@ -505,6 +511,8 @@ class decisionTreeTrading:
         """
         self.train_model()
         self.generate_signals()
+
+        self.set_output()
 
     def plot_strategy(self):
         """
@@ -627,6 +635,8 @@ class KalmanTrendStrategy:
         self.kalman_filter()
         self.generate_signals(threshold=2.0)
 
+        self.set_output()
+
     def set_output(self):
         """
         Set the output of the kalman trend strategy, with date as index, close price, signals."""
@@ -730,6 +740,8 @@ class KalmanMeanReversion:
 
         self.kalman_filter()
         self.signals = self.generate_signals(threshold=1.5)
+
+        self.set_output()
     
     def set_output(self):
         """
@@ -822,6 +834,8 @@ class randomForest:
         """
         self.train_model()
         self.generate_signals()
+
+        self.set_output()
     
     def plot_strategy(self):
         """
@@ -959,6 +973,8 @@ class NeuralNetworkStrategy:
         self.train_model()
         self.predict_signals()
 
+        self.set_output()
+
     def set_output(self):
         """
         Set the output of the neural network strategy, with date as index, close price, signals.
@@ -980,6 +996,8 @@ class randomTrader:
         """
         self.stock_data['Signal'] = np.random.choice([-1, 0, 1], size=len(self.stock_data))
     
+        self.set_output()
+
     def plot_strategy(self):
         """
         Plot the stock price with buy/sell signals.
@@ -994,7 +1012,7 @@ class randomTrader:
         plt.title(f"{self.ticker} Random Trading Strategy")
         plt.xlabel("Date")
         plt.ylabel("Price (USD)")
-        plt.legend
+        plt.legend()
 
     def set_output(self):
         """
