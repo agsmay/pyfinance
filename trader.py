@@ -1,24 +1,42 @@
 from stock_pricing import stockPrice
 import trading_strategy as ts
+from stock_portfolio import StockPortfolio  # Import the portfolio class
 import matplotlib.pyplot as plt
 
+# Settings for the portfolio
+initial_cash = 100000  # Starting cash for the portfolio
+companies = [("UNH", "1y"), ("GOGL", "1y"), ("AAPL", "1y")]  # List of (ticker, period) tuples
+strategies = [
+    ("UNH", "Moving Average", ts.movingAverage, {"lower_window": 20, "upper_window": 50}),
+    ("GOGL", "Random Forest", ts.randomForest, {}),
+    ("AAPL", "Neural Network", ts.NeuralNetworkStrategy, {}),
+    ("AAPL", "Kalman Mean Reversion", ts.KalmanMeanReversion, {})
+]
 
-# Settings to run the trading strategies
-ticker = "UNH"     # Ticker symbol
-period = "1y"       # Time period for fetching historical stock price data
-forecast_days = 10  # Number of days to forecast into the future (used in regression prediction)
-trading_strategy = "Random Trader"  # Trading strategy to use
-plot = True
 
-# Initialize the stock price object, fetch data for the specified period, and plot the stock price
-company = stockPrice(ticker)
-company.set_period(period)
-company.get_stock_data()
+# Initialize the portfolio
+portfolio = StockPortfolio(initial_cash=initial_cash)
 
-manager = ts.tradeManager(company.ticker, company.stock_data)
-manager.run_strategy(strategy_name=trading_strategy, plot=plot)
+# Add companies and fetch their stock data
+for ticker, period in companies:
+    company = stockPrice(ticker)
+    company.set_period(period)
+    company.get_stock_data()
+    portfolio.add_company(ticker, company.stock_data)
 
-manager.backtest_strategy(plot=plot)
+# Assign strategies to companies
+for ticker, strategy_name, strategy_class, kwargs in strategies:
+    portfolio.assign_strategy(ticker, strategy_name, strategy_class, **kwargs)
 
-if plot:
-    plt.show()
+# Run all assigned strategies
+portfolio.run_strategies()
+
+# Backtest the portfolio
+portfolio.backtest_portfolio()
+
+# Evaluate and visualize portfolio performance
+portfolio.evaluate_performance()
+portfolio.visualise_performance()
+
+# Show all plots
+plt.show()
